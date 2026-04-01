@@ -1,6 +1,9 @@
-FROM node:20-alpine
+FROM m.daocloud.io/docker.io/library/node:20-alpine
 
 WORKDIR /app
+
+# Use China npm mirror
+RUN npm config set registry https://registry.npmmirror.com
 
 # Install dependencies
 COPY package.json package-lock.json* ./
