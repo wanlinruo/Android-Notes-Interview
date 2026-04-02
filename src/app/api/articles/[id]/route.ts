@@ -40,6 +40,16 @@ export async function PUT(
   const { title, content, summary, type, status, categoryId, tagIds } =
     await request.json();
 
+  // Regenerate slug if title changed
+  let slug: string | undefined;
+  if (title) {
+    const existing = await prisma.article.findUnique({ where: { id }, select: { title: true } });
+    if (existing && existing.title !== title) {
+      const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      slug = (base || "article") + `-${Date.now()}`;
+    }
+  }
+
   // Update tags: delete old, create new
   if (tagIds) {
     await prisma.articleTag.deleteMany({ where: { articleId: id } });
@@ -49,6 +59,7 @@ export async function PUT(
     where: { id },
     data: {
       title,
+      ...(slug ? { slug } : {}),
       content,
       summary,
       type,

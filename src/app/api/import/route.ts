@@ -6,7 +6,8 @@ import { importFromUrl } from "@/lib/import";
 export async function POST(request: NextRequest) {
   await requireAdmin();
 
-  const { url, action } = await request.json();
+  const body = await request.json();
+  const { url, action } = body;
 
   if (!url) {
     return NextResponse.json({ error: "URL is required" }, { status: 400 });
@@ -40,13 +41,13 @@ export async function POST(request: NextRequest) {
 
   if (action === "save") {
     // Save as draft article
-    const { title, content, categoryId, tagIds, type } = await request.json();
+    const { title, content, categoryId, tagIds, type } = body;
 
-    const slug =
-      title
-        .toLowerCase()
-        .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-        .replace(/^-|-$/g, "") + `-${Date.now()}`;
+    const base = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const slug = (base || "article") + `-${Date.now()}`;
 
     const article = await prisma.article.create({
       data: {

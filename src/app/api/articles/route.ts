@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-utils";
 
 function generateSlug(title: string): string {
-  return title
+  const base = title
     .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+  return base || `article-${Date.now()}`;
 }
 
 export async function GET(request: NextRequest) {
