@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.worktrees
+.gitignore
+.env
+.superpowers
+*.md
+__tests__
+docs
