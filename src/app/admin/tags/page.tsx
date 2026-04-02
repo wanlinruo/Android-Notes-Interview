@@ -14,7 +14,8 @@ export default function AdminTagsPage() {
     setTags(await res.json());
   }
 
-  useEffect(() => { loadTags(); }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void loadTags(); }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

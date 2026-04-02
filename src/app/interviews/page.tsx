@@ -3,6 +3,8 @@ import { ArticleCard } from "@/components/article-card";
 import { ArticleFilters } from "@/components/article-filters";
 import { Pagination } from "@/components/pagination";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }
@@ -41,24 +43,24 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
 
       {/* Filters */}
       <div className="flex gap-3 mb-4">
-        <a
+        <Link
           href="/admin/articles"
           className={`text-sm px-3 py-1 rounded ${!status && !type ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
         >
           全部 ({total})
-        </a>
-        <a
+        </Link>
+        <Link
           href="/admin/articles?status=DRAFT"
           className={`text-sm px-3 py-1 rounded ${status === "DRAFT" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
         >
           草稿
-        </a>
-        <a
+        </Link>
+        <Link
           href="/admin/articles?status=PUBLISHED"
           className={`text-sm px-3 py-1 rounded ${status === "PUBLISHED" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
         >
           已发布
-        </a>
+        </Link>
       </div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">

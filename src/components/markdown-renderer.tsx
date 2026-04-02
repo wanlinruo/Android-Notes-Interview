@@ -19,15 +19,18 @@ function childrenToText(children: React.ReactNode): string {
 }
 
 const headingComponents: Partial<Components> = {
-  h2: ({ children, node: _node, ...props }) => {
+  h2: ({ children, node: _n, ...props }) => {
+    void _n;
     const id = textToId(childrenToText(children));
     return <h2 id={id} {...props}>{children}</h2>;
   },
-  h3: ({ children, node: _node, ...props }) => {
+  h3: ({ children, node: _n, ...props }) => {
+    void _n;
     const id = textToId(childrenToText(children));
     return <h3 id={id} {...props}>{children}</h3>;
   },
-  h4: ({ children, node: _node, ...props }) => {
+  h4: ({ children, node: _n, ...props }) => {
+    void _n;
     const id = textToId(childrenToText(children));
     return <h4 id={id} {...props}>{children}</h4>;
   },

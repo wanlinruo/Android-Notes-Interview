@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Toc } from "@/components/toc";
 import { CategoryNav } from "@/components/category-nav";
@@ -76,16 +79,16 @@ export default async function ArticleDetailPage({ params }: Props) {
     <div className="max-w-7xl mx-auto">
       {/* Breadcrumb */}
       <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-800">
-        <a href="/" className="hover:text-gray-300">
+        <Link href="/" className="hover:text-gray-300">
           首页
-        </a>{" "}
+        </Link>{" "}
         /{" "}
-        <a
+        <Link
           href={`/categories/${article.category.slug}`}
           className="hover:text-gray-300"
         >
           {article.category.name}
-        </a>{" "}
+        </Link>{" "}
         / {article.title}
       </div>
 

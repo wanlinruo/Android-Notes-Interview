@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { StatsCard } from "@/components/admin/stats-card";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const [noteCount, interviewCount, userCount, totalViews, totalFavorites, topArticles] =
     await Promise.all([

@@ -18,7 +18,8 @@ export default function AdminCommentsPage() {
     setComments(await res.json());
   }
 
-  useEffect(() => { loadComments(); }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void loadComments(); }, []);
 
   async function handleDelete(id: string) {
     if (!confirm("确定删除？")) return;

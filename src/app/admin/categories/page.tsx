@@ -19,7 +19,8 @@ export default function AdminCategoriesPage() {
     setCategories(await res.json());
   }
 
-  useEffect(() => { loadCategories(); }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void loadCategories(); }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

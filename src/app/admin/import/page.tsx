@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { ImportForm } from "@/components/admin/import-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminImportPage() {
   const [categories, tags] = await Promise.all([
     prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),

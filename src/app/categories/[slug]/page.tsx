@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { ArticleCard } from "@/components/article-card";
 import { Pagination } from "@/components/pagination";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | undefined }>;
