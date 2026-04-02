@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Android Knowledge Hub
 
-## Getting Started
+A full-stack knowledge base for Android developers, featuring structured notes, interview questions, learning progress tracking, and content import from external sources.
 
-First, run the development server:
+Built with Next.js 15, TypeScript, Prisma, PostgreSQL, and Tailwind CSS.
+
+## Features
+
+### For Learners
+
+- **Knowledge Notes & Interview Questions** — Browse articles organized by category and difficulty (beginner / intermediate / advanced)
+- **Full-text Search** — Search across titles and content powered by PostgreSQL
+- **Learning Progress** — Track articles as unread, reading, or completed; view progress stats by category
+- **Favorites** — Bookmark articles for quick access later
+- **Comments** — Leave feedback or corrections on any article
+- **Dark Mode** — Automatic or manual theme switching
+
+### For Admins
+
+- **Dashboard** — Overview of article counts, user stats, total views, and top favorited articles
+- **Article Management** — Create, edit, and publish articles with a Markdown editor; filter by type, status, and category
+- **Category & Tag Management** — Organize content with hierarchical categories and difficulty/topic tags
+- **Content Import** — Paste any URL to automatically extract the article content, convert to Markdown, and save as a draft
+- **User & Comment Management** — View registered users and moderate comments
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Database | PostgreSQL 16 |
+| ORM | Prisma |
+| Auth | NextAuth.js v5 (email + password) |
+| Styling | Tailwind CSS |
+| Deployment | Docker + Nginx |
+
+## Quick Start
+
+### Prerequisites
+
+- [Docker](https://www.docker.com/) and Docker Compose
+
+### Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone the repo
+git clone https://github.com/wanlinruo/Android-Notes-Interview.git
+cd Android-Notes-Interview
+
+# Copy environment variables
+cp .env.example .env
+
+# Start dev environment (PostgreSQL + Next.js)
+docker compose -f docker-compose.dev.yml up -d
+
+# Run database migrations and seed data
+docker compose -f docker-compose.dev.yml exec app npx prisma migrate dev
+docker compose -f docker-compose.dev.yml exec app npx prisma db seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Default admin account:**
+- Email: `admin@example.com`
+- Password: `admin123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Production
 
-## Learn More
+```bash
+# Set your environment variables
+export NEXTAUTH_SECRET="your-production-secret"
+export NEXTAUTH_URL="https://your-domain.com"
 
-To learn more about Next.js, take a look at the following resources:
+# Build and start (includes Nginx reverse proxy)
+docker compose up -d
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Run migrations
+docker compose exec app npx prisma migrate deploy
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+src/
+  app/
+    (pages)          # Homepage, notes, interviews, article detail, profile
+    admin/           # Dashboard, article/category/tag/user/comment management, content import
+    api/             # RESTful API routes
+    login/, register/ # Auth pages
+  components/        # Reusable UI components
+  lib/               # Prisma client, auth config, import logic
+prisma/
+  schema.prisma      # Database schema (7 models)
+  seed.ts            # Seed data with categories, tags, admin user
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Content Organization
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Articles are organized along two dimensions:
+
+1. **Categories** — Hierarchical modules like Components, Jetpack, Performance, Networking, Custom Views, Design Patterns
+2. **Tags** — Difficulty levels (beginner / intermediate / advanced) and topic tags for cross-cutting concerns
+
+## License
+
+MIT
