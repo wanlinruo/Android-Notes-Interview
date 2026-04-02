@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-utils";
+import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const articleId = searchParams.get("articleId");
+  const all = searchParams.get("all");
+
+  if (all === "true") {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const comments = await prisma.comment.findMany({
+      include: {
+        user: { select: { nickname: true } },
+        article: { select: { title: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(comments);
+  }
 
   if (!articleId) {
     return NextResponse.json({ error: "articleId required" }, { status: 400 });
