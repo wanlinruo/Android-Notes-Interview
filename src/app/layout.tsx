@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "next-themes";
+import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { MobileNav } from "@/components/mobile-nav";
 import "./globals.css";
@@ -20,16 +19,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="relative min-h-screen">
-              <Navbar />
-              <main className="pb-16 md:pb-0">{children}</main>
-              <MobileNav />
-            </div>
-          </ThemeProvider>
-        </SessionProvider>
+      <body className={inter.className}>
+        <Providers>
+          <div className="relative min-h-screen">
+            <Navbar />
+            <main className="pb-16 md:pb-0">{children}</main>
+            <MobileNav />
+          </div>
+        </Providers>
       </body>
     </html>
   );
