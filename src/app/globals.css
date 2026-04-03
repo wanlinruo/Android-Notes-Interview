@@ -3,6 +3,64 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  @apply antialiased;
+@layer base {
+  :root {
+    --background: 270 50% 99%;
+    --foreground: 243 75% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 243 75% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 243 75% 15%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 40% 96%;
+    --secondary-foreground: 243 75% 15%;
+    --muted: 270 30% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 270 40% 96%;
+    --accent-foreground: 243 75% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 270 20% 92%;
+    --input: 270 20% 92%;
+    --ring: 239 84% 67%;
+    --radius: 0.75rem;
+
+    --brand-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --brand-text-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  }
+
+  .dark {
+    --background: 260 60% 7%;
+    --foreground: 263 70% 94%;
+    --card: 258 50% 18%;
+    --card-foreground: 263 70% 94%;
+    --popover: 258 50% 18%;
+    --popover-foreground: 263 70% 94%;
+    --primary: 263 70% 75%;
+    --primary-foreground: 260 60% 7%;
+    --secondary: 258 40% 22%;
+    --secondary-foreground: 263 70% 94%;
+    --muted: 258 30% 22%;
+    --muted-foreground: 258 25% 55%;
+    --accent: 258 40% 22%;
+    --accent-foreground: 263 70% 94%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 258 35% 25%;
+    --input: 258 35% 25%;
+    --ring: 263 70% 75%;
+
+    --brand-gradient: linear-gradient(135deg, #a78bfa, #c4b5fd);
+    --brand-text-gradient: linear-gradient(135deg, #a78bfa, #c4b5fd);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 }
