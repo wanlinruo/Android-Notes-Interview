@@ -1,46 +1,48 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 
-export function FavoriteButton({
-  articleId,
-  initialFavorited,
-  count,
-}: {
+interface FavoriteButtonProps {
   articleId: string;
   initialFavorited: boolean;
   count: number;
-}) {
+}
+
+export function FavoriteButton({ articleId, initialFavorited, count }: FavoriteButtonProps) {
   const { data: session } = useSession();
   const [favorited, setFavorited] = useState(initialFavorited);
   const [favCount, setFavCount] = useState(count);
 
   async function toggle() {
     if (!session) return;
-
     const res = await fetch("/api/favorites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ articleId }),
     });
-
+    if (!res.ok) return;
     const data = await res.json();
     setFavorited(data.favorited);
     setFavCount((c) => (data.favorited ? c + 1 : c - 1));
   }
 
   return (
-    <button
+    <Button
+      variant={favorited ? "default" : "outline"}
+      size="sm"
       onClick={toggle}
       disabled={!session}
-      className={`w-full text-sm py-1.5 rounded border transition-colors ${
-        favorited
-          ? "bg-yellow-500/20 border-yellow-500 text-yellow-500"
-          : "border-gray-700 text-gray-400 hover:border-gray-500"
-      } disabled:opacity-50`}
+      className={`w-full gap-1.5 transition-all ${favorited ? "active:scale-95" : ""}`}
     >
-      {favorited ? "\u2B50" : "\u2606"} 收藏 ({favCount})
-    </button>
+      <svg
+        className={`h-4 w-4 transition-transform ${favorited ? "scale-110 fill-current" : ""}`}
+        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      >
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      {favCount}
+    </Button>
   );
 }

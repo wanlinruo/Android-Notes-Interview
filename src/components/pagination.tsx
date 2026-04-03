@@ -1,14 +1,15 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
-interface Props {
+interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  baseUrl: string;
+  baseUrl?: string;
 }
 
-export function Pagination({ currentPage, totalPages, baseUrl }: Props) {
+export function Pagination({ currentPage, totalPages, baseUrl = "" }: PaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,24 +22,26 @@ export function Pagination({ currentPage, totalPages, baseUrl }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
-      <button
-        onClick={() => goToPage(currentPage - 1)}
+    <div className="flex items-center justify-center gap-2 pt-6">
+      <Button
+        variant="outline"
+        size="sm"
         disabled={currentPage <= 1}
-        className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+        onClick={() => goToPage(currentPage - 1)}
       >
-        上一页
-      </button>
-      <span className="text-sm text-gray-600 dark:text-gray-400">
+        Previous
+      </Button>
+      <span className="px-3 text-sm text-muted-foreground">
         {currentPage} / {totalPages}
       </span>
-      <button
-        onClick={() => goToPage(currentPage + 1)}
+      <Button
+        variant="outline"
+        size="sm"
         disabled={currentPage >= totalPages}
-        className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+        onClick={() => goToPage(currentPage + 1)}
       >
-        下一页
-      </button>
+        Next
+      </Button>
     </div>
   );
 }
