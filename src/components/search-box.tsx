@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
-export function SearchBox() {
+export function SearchBox({ className }: { className?: string }) {
   const [query, setQuery] = useState("");
   const router = useRouter();
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/notes?q=${encodeURIComponent(query.trim())}`);
@@ -15,13 +16,13 @@ export function SearchBox() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="relative">
-      <input
+    <form onSubmit={handleSubmit} className={className}>
+      <Input
         type="text"
+        placeholder="Search articles..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="搜索知识点..."
-        className="w-48 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="h-9 w-48 text-sm"
       />
     </form>
   );

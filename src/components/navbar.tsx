@@ -1,73 +1,104 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { ThemeToggle } from "./theme-toggle";
-import { SearchBox } from "./search-box";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { SearchBox } from "@/components/search-box";
+import { MobileMenu } from "@/components/mobile-menu";
+import { buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { href: "/notes", label: "Knowledge Notes" },
+  { href: "/interviews", label: "Interview Prep" },
+];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
 
   return (
-    <nav className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="font-bold text-lg text-gray-900 dark:text-white"
-          >
-            AndroidHub
-          </Link>
-          <Link
-            href="/notes"
-            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-          >
-            知识笔记
-          </Link>
-          <Link
-            href="/interviews"
-            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-          >
-            面试题
-          </Link>
-        </div>
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto flex h-14 max-w-7xl items-center px-4 md:px-8">
+        {/* Logo */}
+        <Link href="/" className="mr-6 flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[image:var(--brand-gradient)] text-sm text-white">
+            A
+          </div>
+          <span className="hidden bg-[image:var(--brand-gradient)] bg-clip-text text-lg font-bold text-transparent sm:inline">
+            Android Hub
+          </span>
+        </Link>
 
-        <div className="flex items-center gap-4">
-          <SearchBox />
+        {/* Desktop Nav Links */}
+        <nav className="hidden items-center gap-6 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`relative text-sm transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:rounded-full after:bg-primary after:transition-all after:duration-200 hover:text-foreground hover:after:w-full ${
+                pathname === link.href
+                  ? "text-foreground after:w-full"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex flex-1 items-center justify-end gap-2">
+          {/* Search (desktop) */}
+          <SearchBox className="hidden md:block" />
+
+          {/* Theme Toggle */}
           <ThemeToggle />
+
+          {/* User Menu or Login */}
           {session?.user ? (
-            <div className="flex items-center gap-3">
-              {session.user.role === "ADMIN" && (
-                <Link
-                  href="/admin"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  管理后台
-                </Link>
-              )}
-              <Link
-                href="/profile"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                {session.user.name}
-              </Link>
-              <button
-                onClick={() => signOut()}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                退出
-              </button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "rounded-full")}>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                    {session.user.name?.[0] || session.user.email?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 text-sm font-medium">{session.user.name || session.user.email}</div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
+                {session.user.role === "ADMIN" && (
+                  <DropdownMenuItem onClick={() => router.push("/admin")}>Admin</DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link
               href="/login"
-              className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
             >
-              登录
+              Login
             </Link>
           )}
+
+          {/* Mobile Menu Button */}
+          <MobileMenu session={session} pathname={pathname} />
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
