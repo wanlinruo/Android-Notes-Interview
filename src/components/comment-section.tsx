@@ -75,7 +75,20 @@ export function CommentSection({ articleId }: { articleId: string }) {
           </Button>
         </form>
       ) : (
-        <p className="text-sm text-muted-foreground">Sign in to leave a comment</p>
+        <Card>
+          <CardContent className="flex flex-col items-center py-8 px-4 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <svg className="h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <p className="text-sm font-medium mb-1">Join the discussion</p>
+            <p className="text-xs text-muted-foreground mb-4">Sign in to leave comments and corrections</p>
+            <Button size="sm" onClick={() => window.location.href = "/login"}>
+              Sign in
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
