@@ -1,8 +1,12 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface FilterProps {
   categories: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[];
@@ -11,13 +15,14 @@ interface FilterProps {
 }
 
 export function ArticleFilters({ categories, tags, baseUrl = "" }: FilterProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category") || "";
-  const currentTag = searchParams.get("tag") || "";
+  const currentDifficulty = searchParams.get("difficulty") || "";
+  const currentTopic = searchParams.get("topic") || "";
   const currentQuery = searchParams.get("q") || "";
+  const [query, setQuery] = useState(currentQuery);
 
-  function updateFilter(key: string, value: string) {
+  function buildHref(key: string, value: string): string {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);
@@ -25,78 +30,134 @@ export function ArticleFilters({ categories, tags, baseUrl = "" }: FilterProps) 
       params.delete(key);
     }
     params.delete("page");
-    router.push(`${baseUrl}?${params.toString()}`);
+    return `${baseUrl}?${params.toString()}`;
+  }
+
+  function searchHref(): string {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("q", query);
+    } else {
+      params.delete("q");
+    }
+    params.delete("page");
+    return `${baseUrl}?${params.toString()}`;
   }
 
   const difficultyTags = tags.filter((t) => t.type === "DIFFICULTY");
   const topicTags = tags.filter((t) => t.type === "TOPIC");
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
-      {/* Search */}
-      <Input
-        type="text"
-        placeholder="Search..."
-        defaultValue={currentQuery}
-        className="h-9 w-full sm:w-48"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            updateFilter("q", (e.target as HTMLInputElement).value);
-          }
-        }}
-      />
-
-      {/* Category */}
-      <select
-        value={currentCategory}
-        onChange={(e) => updateFilter("category", e.target.value)}
-        className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <option value="">All Categories</option>
-        {categories.map((cat) => (
-          <optgroup key={cat.id} label={cat.name}>
-            <option value={cat.slug}>{cat.name}</option>
-            {cat.children?.map((child) => (
-              <option key={child.id} value={child.slug}>
-                {child.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-
-      {/* Difficulty */}
-      <select
-        value={currentTag}
-        onChange={(e) => updateFilter("tag", e.target.value)}
-        className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <option value="">All Levels</option>
-        {difficultyTags.map((tag) => (
-          <option key={tag.id} value={tag.slug}>
-            {tag.name}
-          </option>
-        ))}
-      </select>
-
-      {/* Topic Tags */}
-      {topicTags.length > 0 && (
+    <Card>
+      <CardContent className="space-y-3 p-4">
+        {/* Search */}
         <div className="flex gap-2">
-          {topicTags.map((tag) => (
-            <button
-              key={tag.id}
-              onClick={() => updateFilter("tag", currentTag === tag.slug ? "" : tag.slug)}
+          <Input
+            type="text"
+            placeholder="Search articles..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-9 w-full"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                window.location.href = searchHref();
+              }
+            }}
+          />
+          <Link href={searchHref()}>
+            <Button variant="outline" size="sm" className="h-9 px-3">
+              Search
+            </Button>
+          </Link>
+        </div>
+
+        {/* Categories — grouped by parent */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-medium text-muted-foreground mr-1">Category</span>
+            <Link
+              href={buildHref("category", "")}
+              className={cn(
+                buttonVariants({ variant: currentCategory === "" ? "default" : "outline", size: "sm" }),
+                "h-7 px-2.5 text-xs"
+              )}
             >
-              <Badge
-                variant={currentTag === tag.slug ? "default" : "outline"}
-                className="cursor-pointer transition-colors"
+              All
+            </Link>
+            {categories.map((cat) => (
+              <div key={cat.id} className="flex items-center gap-1.5">
+                <div className="mx-1 h-4 w-px bg-border" />
+                <Link
+                  href={buildHref("category", currentCategory === cat.slug ? "" : cat.slug)}
+                  className={cn(
+                    buttonVariants({ variant: currentCategory === cat.slug ? "default" : "outline", size: "sm" }),
+                    "h-7 px-2.5 text-xs font-semibold"
+                  )}
+                >
+                  {cat.name}
+                </Link>
+                {cat.children?.map((child) => (
+                  <Link
+                    key={child.id}
+                    href={buildHref("category", currentCategory === child.slug ? "" : child.slug)}
+                    className={cn(
+                      buttonVariants({ variant: currentCategory === child.slug ? "default" : "outline", size: "sm" }),
+                      "h-7 px-2.5 text-xs"
+                    )}
+                  >
+                    {child.name}
+                  </Link>
+                ))}
+              </div>
+            ))}
+        </div>
+
+        {/* Difficulty */}
+        {difficultyTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <span className="text-xs font-medium text-muted-foreground mr-1">Level</span>
+            <Link
+              href={buildHref("difficulty", "")}
+              className={cn(
+                buttonVariants({ variant: currentDifficulty === "" ? "default" : "outline", size: "sm" }),
+                "h-7 px-2.5 text-xs"
+              )}
+            >
+              All
+            </Link>
+            {difficultyTags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={buildHref("difficulty", currentDifficulty === tag.slug ? "" : tag.slug)}
+                className={cn(
+                  buttonVariants({ variant: currentDifficulty === tag.slug ? "default" : "outline", size: "sm" }),
+                  "h-7 px-2.5 text-xs"
+                )}
               >
                 {tag.name}
-              </Badge>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Topic Tags */}
+        {topicTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <span className="text-xs font-medium text-muted-foreground mr-1">Topics</span>
+            {topicTags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={buildHref("topic", currentTopic === tag.slug ? "" : tag.slug)}
+                className={cn(
+                  buttonVariants({ variant: currentTopic === tag.slug ? "default" : "outline", size: "sm" }),
+                  "h-7 px-2.5 text-xs"
+                )}
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
