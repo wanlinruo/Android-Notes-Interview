@@ -38,7 +38,7 @@ const headingComponents: Partial<Components> = {
 
 export function MarkdownRenderer({ content }: { content: string }) {
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:bg-gray-900 prose-pre:border prose-pre:border-gray-800">
+    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-headings:text-foreground prose-p:text-foreground/80 prose-a:text-primary prose-pre:bg-card prose-pre:border prose-pre:border-border prose-code:text-primary">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={headingComponents}>
         {content}
       </ReactMarkdown>

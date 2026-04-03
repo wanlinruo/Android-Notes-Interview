@@ -1,38 +1,32 @@
 import Link from "next/link";
 
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-}
-
-interface Props {
-  articles: Article[];
+interface CategoryNavProps {
+  articles: { slug: string; title: string }[];
   currentSlug: string;
   categoryName: string;
 }
 
-export function CategoryNav({ articles, currentSlug, categoryName }: Props) {
+export function CategoryNav({ articles, currentSlug, categoryName }: CategoryNavProps) {
   return (
-    <nav>
-      <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+    <div>
+      <h3 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
         {categoryName}
-      </p>
-      <div className="space-y-0.5">
+      </h3>
+      <nav className="space-y-0.5">
         {articles.map((article) => (
           <Link
-            key={article.id}
+            key={article.slug}
             href={`/articles/${article.slug}`}
-            className={`block text-xs py-1.5 px-2 rounded transition-colors ${
+            className={`block rounded-md px-3 py-1.5 text-sm transition-colors ${
               article.slug === currentSlug
-                ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:text-white hover:bg-gray-800"
+                ? "border-l-2 border-primary bg-primary/5 font-medium text-primary"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
           >
             {article.title}
           </Link>
         ))}
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }

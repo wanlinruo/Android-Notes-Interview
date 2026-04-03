@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const statusConfig = {
@@ -19,10 +20,14 @@ interface ProgressButtonProps {
 
 export function ProgressButton({ articleId, initialStatus }: ProgressButtonProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [status, setStatus] = useState(initialStatus || "UNREAD");
 
   async function cycle() {
-    if (!session) return;
+    if (!session) {
+      router.push("/login");
+      return;
+    }
     const currentIndex = statusCycle.indexOf(status as typeof statusCycle[number]);
     const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
     try {
@@ -44,7 +49,6 @@ export function ProgressButton({ articleId, initialStatus }: ProgressButtonProps
       variant={config.variant}
       size="sm"
       onClick={cycle}
-      disabled={!session}
       className="w-full gap-1.5 active:scale-95 transition-all"
     >
       {config.label}

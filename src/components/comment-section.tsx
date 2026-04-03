@@ -1,7 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { CommentWithUser } from "@/types";
 
 export function CommentSection({ articleId }: { articleId: string }) {
@@ -11,7 +14,7 @@ export function CommentSection({ articleId }: { articleId: string }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/comments?articleId=${articleId}`)
+    void fetch(`/api/comments?articleId=${articleId}`)
       .then((r) => r.json())
       .then(setComments);
   }, [articleId]);
@@ -19,14 +22,12 @@ export function CommentSection({ articleId }: { articleId: string }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!content.trim()) return;
-
     setLoading(true);
     const res = await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ articleId, content }),
     });
-
     if (res.ok) {
       const comment = await res.json();
       setComments([comment, ...comments]);
@@ -36,52 +37,45 @@ export function CommentSection({ articleId }: { articleId: string }) {
   }
 
   return (
-    <div className="border-t border-gray-800 mt-8 pt-6">
-      <h3 className="text-sm font-semibold mb-4">
-        评论纠错 ({comments.length})
-      </h3>
+    <div>
+      <h3 className="mb-4 text-lg font-semibold">Comments ({comments.length})</h3>
 
-      {session && (
-        <form onSubmit={handleSubmit} className="mb-4">
+      {comments.length > 0 ? (
+        <div className="space-y-3 mb-6">
+          {comments.map((c) => (
+            <Card key={c.id}>
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium">@{c.user.nickname}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">{c.content}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="mb-6 text-sm text-muted-foreground">No comments yet</p>
+      )}
+
+      <Separator className="my-4" />
+
+      {session ? (
+        <form onSubmit={handleSubmit} className="space-y-3">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="写下你的评论或纠错..."
-            rows={3}
-            className="w-full px-3 py-2 text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+            placeholder="Leave a comment or correction..."
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] resize-none"
           />
-          <button
-            type="submit"
-            disabled={loading || !content.trim()}
-            className="mt-2 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "提交中..." : "提交"}
-          </button>
+          <Button type="submit" size="sm" disabled={loading || !content.trim()}>
+            {loading ? "Posting..." : "Post Comment"}
+          </Button>
         </form>
-      )}
-
-      <div className="space-y-3">
-        {comments.map((comment) => (
-          <div
-            key={comment.id}
-            className="bg-gray-900 border border-gray-800 rounded-md p-3"
-          >
-            <div className="text-xs text-blue-400 mb-1">
-              @{comment.user.nickname} ·{" "}
-              {new Date(comment.createdAt).toLocaleDateString("zh-CN")}
-            </div>
-            <p className="text-sm text-gray-300">{comment.content}</p>
-          </div>
-        ))}
-      </div>
-
-      {!session && (
-        <p className="text-sm text-gray-500 text-center py-4">
-          <a href="/login" className="text-blue-500 hover:underline">
-            登录
-          </a>{" "}
-          后参与评论
-        </p>
+      ) : (
+        <p className="text-sm text-muted-foreground">Sign in to leave a comment</p>
       )}
     </div>
   );

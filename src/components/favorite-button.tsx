@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface FavoriteButtonProps {
@@ -12,11 +13,15 @@ interface FavoriteButtonProps {
 
 export function FavoriteButton({ articleId, initialFavorited, count }: FavoriteButtonProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [favorited, setFavorited] = useState(initialFavorited);
   const [favCount, setFavCount] = useState(count);
 
   async function toggle() {
-    if (!session) return;
+    if (!session) {
+      router.push("/login");
+      return;
+    }
     const res = await fetch("/api/favorites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -33,7 +38,6 @@ export function FavoriteButton({ articleId, initialFavorited, count }: FavoriteB
       variant={favorited ? "default" : "outline"}
       size="sm"
       onClick={toggle}
-      disabled={!session}
       className={`w-full gap-1.5 transition-all ${favorited ? "active:scale-95" : ""}`}
     >
       <svg

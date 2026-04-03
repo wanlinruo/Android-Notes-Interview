@@ -8,23 +8,27 @@ interface TocItem {
   level: number;
 }
 
-export function Toc({ content }: { content: string }) {
-  const [activeId, setActiveId] = useState("");
+function extractHeadings(content: string): TocItem[] {
+  const headings: TocItem[] = [];
+  const regex = /^(#{2,4})\s+(.+)$/gm;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const text = match[2]
+      .replace(/[`*~_\\]/g, "")
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .trim();
+    const id = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+      .replace(/^-|-$/g, "");
+    headings.push({ id, text, level: match[1].length });
+  }
+  return headings;
+}
 
-  const headings: TocItem[] = content
-    .split("\n")
-    .filter((line) => /^#{2,4}\s/.test(line))
-    .map((line) => {
-      const match = line.match(/^(#{2,4})\s+(.+)/);
-      if (!match) return null;
-      const text = match[2].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-        .replace(/^-|-$/g, "");
-      return { id, text, level: match[1].length };
-    })
-    .filter(Boolean) as TocItem[];
+export function Toc({ content }: { content: string }) {
+  const headings = extractHeadings(content);
+  const [activeId, setActiveId] = useState("");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -32,7 +36,7 @@ export function Toc({ content }: { content: string }) {
         const visible = entries.find((e) => e.isIntersecting);
         if (visible) setActiveId(visible.target.id);
       },
-      { rootMargin: "-80px 0px -80% 0px" }
+      { rootMargin: "-80px 0px -60% 0px" }
     );
 
     headings.forEach((h) => {
@@ -46,23 +50,31 @@ export function Toc({ content }: { content: string }) {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="space-y-1">
-      <p className="text-xs font-medium text-gray-500 uppercase mb-2">目录</p>
-      {headings.map((h) => (
-        <a
-          key={h.id}
-          href={`#${h.id}`}
-          className={`block text-xs py-0.5 transition-colors ${
-            h.level === 3 ? "pl-3" : h.level === 4 ? "pl-6" : ""
-          } ${
-            activeId === h.id
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-300"
-          }`}
-        >
-          {h.text}
-        </a>
-      ))}
-    </nav>
+    <div>
+      <h3 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+        On this page
+      </h3>
+      <nav className="space-y-0.5">
+        {headings.map((heading) => (
+          <a
+            key={heading.id}
+            href={`#${heading.id}`}
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById(heading.id)?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className={`block rounded-md py-1 text-sm transition-colors ${
+              heading.level === 3 ? "pl-4" : heading.level === 4 ? "pl-8" : "pl-2"
+            } ${
+              activeId === heading.id
+                ? "font-medium text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {heading.text}
+          </a>
+        ))}
+      </nav>
+    </div>
   );
 }
