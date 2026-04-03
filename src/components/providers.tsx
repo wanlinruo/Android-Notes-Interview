@@ -1,34 +1,94 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { SessionProvider } from "next-auth/react";
 
+type Theme = "light" | "dark" | "system";
+
+interface ThemeContextValue {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  resolvedTheme: "light" | "dark";
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: "system",
+  setTheme: () => {},
+  resolvedTheme: "light",
+});
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+function getSystemTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setMounted(true); }, []);
+  const applyTheme = useCallback((t: Theme) => {
+    const resolved = t === "system" ? getSystemTheme() : t;
+    setResolvedTheme(resolved);
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(resolved);
+  }, []);
 
-  // Render children without ThemeProvider on server to avoid script injection
-  // that causes hydration mismatch in React 19
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  const setTheme = useCallback(
+    (t: Theme) => {
+      setThemeState(t);
+      localStorage.setItem("theme", t);
+      applyTheme(t);
+    },
+    [applyTheme]
+  );
+
+  // Initialize on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("theme") as Theme | null;
+    const initial = stored || "system";
+    setThemeState(initial);
+    applyTheme(initial);
+  }, [applyTheme]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      if (theme === "system") {
+        applyTheme("system");
+      }
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [theme, applyTheme]);
+
+  const value = useMemo(
+    () => ({ theme, setTheme, resolvedTheme }),
+    [theme, setTheme, resolvedTheme]
+  );
 
   return (
-    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
-      {children}
-    </NextThemesProvider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ThemeProvider>
-        {children}
-      </ThemeProvider>
+      <ThemeProvider>{children}</ThemeProvider>
     </SessionProvider>
   );
 }

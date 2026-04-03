@@ -1,7 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useTheme } from "@/components/providers";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,12 +12,6 @@ import { cn } from "@/lib/utils";
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setMounted(true); }, []);
-
-  if (!mounted) return null;
 
   return (
     <DropdownMenu>
