@@ -80,7 +80,7 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
                 {session.user.role === "ADMIN" && (
-                  <DropdownMenuItem onClick={() => router.push("/admin")}>Admin</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/admin")}>Console</DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>

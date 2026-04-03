@@ -70,7 +70,7 @@ export function MobileMenu({ session, pathname }: MobileMenuProps) {
               <div className="px-3 py-1 text-sm font-medium">{session.user.name || session.user.email}</div>
               <Link href="/profile" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">Profile</Link>
               {session.user.role === "ADMIN" && (
-                <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">Admin</Link>
+                <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">Console</Link>
               )}
               <button onClick={() => { signOut(); setOpen(false); }} className="rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground">Sign out</button>
             </div>
