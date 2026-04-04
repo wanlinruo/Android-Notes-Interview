@@ -89,6 +89,7 @@ model Article {
   favorites Favorite[]
   progress  Progress[]
   comments  Comment[]
+  versions  ArticleVersion[]
 }
 
 model ArticleTag {
@@ -98,6 +99,24 @@ model ArticleTag {
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
+}
+
+model ArticleVersion {
+  id         String        @id @default(cuid())
+  articleId  String
+  article    Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  version    Int
+  title      String
+  slug       String
+  content    String
+  summary    String?
+  type       ArticleType
+  status     ArticleStatus
+  categoryId String
+  tagIds     String[]
+  createdAt  DateTime      @default(now())
+
+  @@index([articleId, version])
 }
 
 model Favorite {
