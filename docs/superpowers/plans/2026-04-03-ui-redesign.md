@@ -2387,7 +2387,7 @@ git commit -m "feat: redesign admin dashboard with shadcn/ui Cards"
 - Modify: `src/app/admin/articles/[id]/page.tsx`
 - Modify: `src/components/admin/article-form.tsx`
 
-- [ ] **Step 1: Rewrite admin/articles/page.tsx**
+- [x] **Step 1: Rewrite admin/articles/page.tsx**
 
 Replace `src/app/admin/articles/page.tsx`:
 
@@ -2494,7 +2494,7 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
 }
 ```
 
-- [ ] **Step 2: Rewrite admin/articles/[id]/page.tsx**
+- [x] **Step 2: Rewrite admin/articles/[id]/page.tsx**
 
 Replace `src/app/admin/articles/[id]/page.tsx`:
 
@@ -2542,7 +2542,7 @@ export default async function AdminArticleEditPage({ params }: Props) {
 }
 ```
 
-- [ ] **Step 3: Rewrite admin article-form.tsx**
+- [x] **Step 3: Rewrite admin article-form.tsx**
 
 Replace `src/components/admin/article-form.tsx`:
 
@@ -2737,11 +2737,11 @@ export function ArticleForm({ article, categories, tags }: ArticleFormProps) {
 }
 ```
 
-- [ ] **Step 4: Verify in browser**
+- [x] **Step 4: Verify in browser**
 
 Open `http://localhost:3000/admin/articles` — verify table layout, status filters, and article edit form with shadcn/ui.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/admin/articles/ src/components/admin/article-form.tsx

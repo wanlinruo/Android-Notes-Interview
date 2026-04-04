@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Pagination } from "@/components/pagination";
+import { ArticleFilters } from "@/components/admin/article-filters-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -31,78 +35,73 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">文章管理</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold">Articles</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{total} articles total</p>
+        </div>
         <Link
           href="/admin/articles/new"
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
         >
-          新建文章
+          New Article
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-4">
-        <Link
-          href="/admin/articles"
-          className={`text-sm px-3 py-1 rounded ${!status && !type ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
-        >
-          全部 ({total})
-        </Link>
-        <Link
-          href="/admin/articles?status=DRAFT"
-          className={`text-sm px-3 py-1 rounded ${status === "DRAFT" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
-        >
-          草稿
-        </Link>
-        <Link
-          href="/admin/articles?status=PUBLISHED"
-          className={`text-sm px-3 py-1 rounded ${status === "PUBLISHED" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
-        >
-          已发布
-        </Link>
-      </div>
+      <ArticleFilters currentStatus={status} currentType={type} />
 
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="text-left px-4 py-2 font-medium">标题</th>
-              <th className="text-left px-4 py-2 font-medium">类型</th>
-              <th className="text-left px-4 py-2 font-medium">分类</th>
-              <th className="text-left px-4 py-2 font-medium">状态</th>
-              <th className="text-left px-4 py-2 font-medium">更新时间</th>
-              <th className="text-right px-4 py-2 font-medium">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {articles.map((article) => (
-              <tr key={article.id} className="border-t border-gray-200 dark:border-gray-800">
-                <td className="px-4 py-2">{article.title}</td>
-                <td className="px-4 py-2">
-                  <span className={`text-xs px-2 py-0.5 rounded ${article.type === "NOTE" ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300" : "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"}`}>
-                    {article.type === "NOTE" ? "笔记" : "面试"}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-gray-500">{article.category.name}</td>
-                <td className="px-4 py-2">
-                  <span className={`text-xs px-2 py-0.5 rounded ${article.status === "PUBLISHED" ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" : "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300"}`}>
-                    {article.status === "PUBLISHED" ? "已发布" : "草稿"}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-gray-500">
-                  {new Date(article.updatedAt).toLocaleDateString("zh-CN")}
-                </td>
-                <td className="px-4 py-2 text-right">
-                  <Link href={`/admin/articles/${article.id}`} className="text-blue-600 hover:underline">
-                    编辑
-                  </Link>
-                </td>
+      {/* Table */}
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Title</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Type</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Category</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Updated</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {articles.map((article) => (
+                <tr key={article.id} className="border-b border-border last:border-0 transition-colors hover:bg-accent/50">
+                  <td className="px-4 py-3">
+                    <Link href={`/admin/articles/${article.id}`} className="font-medium hover:text-primary transition-colors">
+                      {article.title}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <Badge variant="outline" className="text-[11px]">
+                      {article.type === "NOTE" ? "Note" : "Interview"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
+                    {article.category.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant={article.status === "PUBLISHED" ? "default" : "secondary"}>
+                      {article.status === "PUBLISHED" ? "Published" : "Draft"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
+                    {new Date(article.updatedAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+              {articles.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    No articles found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+
+      <Pagination currentPage={page} totalPages={Math.ceil(total / pageSize)} />
     </div>
   );
 }

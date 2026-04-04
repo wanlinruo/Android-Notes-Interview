@@ -3,6 +3,28 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Category, Tag, Article } from "@/generated/prisma/client";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   article?: Article & { tags: { tagId: string }[] };
@@ -12,7 +34,7 @@ interface Props {
 
 export function ArticleForm({ article, categories, tags }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState(article?.title || "");
   const [content, setContent] = useState(article?.content || "");
   const [summary, setSummary] = useState(article?.summary || "");
@@ -31,10 +53,9 @@ export function ArticleForm({ article, categories, tags }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
 
     const body = { title, content, summary, type, status, categoryId, tagIds: selectedTagIds };
-
     const url = article ? `/api/articles/${article.id}` : "/api/articles";
     const method = article ? "PUT" : "POST";
 
@@ -44,7 +65,7 @@ export function ArticleForm({ article, categories, tags }: Props) {
       body: JSON.stringify(body),
     });
 
-    setLoading(false);
+    setSaving(false);
 
     if (res.ok) {
       router.push("/admin/articles");
@@ -53,9 +74,7 @@ export function ArticleForm({ article, categories, tags }: Props) {
   }
 
   async function handleDelete() {
-    if (!article || !confirm("确定删除这篇文章？")) return;
-
-    await fetch(`/api/articles/${article.id}`, { method: "DELETE" });
+    await fetch(`/api/articles/${article!.id}`, { method: "DELETE" });
     router.push("/admin/articles");
     router.refresh();
   }
@@ -64,144 +83,138 @@ export function ArticleForm({ article, categories, tags }: Props) {
   const topicTags = tags.filter((t) => t.type === "TOPIC");
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium mb-1">标题</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">摘要</label>
-        <input
-          type="text"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">类型</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as "NOTE" | "INTERVIEW")}
-            className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-          >
-            <option value="NOTE">知识笔记</option>
-            <option value="INTERVIEW">面试题</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">状态</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as "DRAFT" | "PUBLISHED")}
-            className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-          >
-            <option value="DRAFT">草稿</option>
-            <option value="PUBLISHED">发布</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">分类</label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            required
-            className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-          >
-            <option value="">选择分类</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.parentId ? "  └ " : ""}{cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">难度标签</label>
-        <div className="flex gap-2">
-          {difficultyTags.map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => toggleTag(tag.id)}
-              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                selectedTagIds.includes(tag.id)
-                  ? "bg-green-600 text-white border-green-600"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
-            >
-              {tag.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {topicTags.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium mb-2">主题标签</label>
-          <div className="flex flex-wrap gap-2">
-            {topicTags.map((tag) => (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => toggleTag(tag.id)}
-                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                  selectedTagIds.includes(tag.id)
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-              >
-                {tag.name}
-              </button>
-            ))}
+    <Card>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Title</label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
-        </div>
-      )}
 
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          内容（Markdown）
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          rows={20}
-          className="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
-        />
-      </div>
+          {/* Summary */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Summary</label>
+            <Input value={summary} onChange={(e) => setSummary(e.target.value)} />
+          </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "保存中..." : "保存"}
-          </button>
-        </div>
-        {article && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="px-4 py-2 text-sm text-red-600 hover:text-red-700"
-          >
-            删除文章
-          </button>
-        )}
-      </div>
-    </form>
+          {/* Type / Status / Category */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Type</label>
+              <Select value={type} onValueChange={(v) => v && setType(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NOTE">Note</SelectItem>
+                  <SelectItem value="INTERVIEW">Interview</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={status} onValueChange={(v) => v && setStatus(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="PUBLISHED">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              <Select value={categoryId} onValueChange={(v) => v && setCategoryId(v)}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.parentId ? `└ ${cat.name}` : cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Difficulty Tags */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Difficulty</label>
+            <div className="flex flex-wrap gap-2">
+              {difficultyTags.map((tag) => (
+                <Button
+                  key={tag.id}
+                  type="button"
+                  variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleTag(tag.id)}
+                >
+                  {tag.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Topic Tags */}
+          {topicTags.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Topics</label>
+              <div className="flex flex-wrap gap-2">
+                {topicTags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleTag(tag.id)}
+                  >
+                    {tag.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Content (Markdown)</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              required
+              rows={20}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : article ? "Update" : "Create"}
+            </Button>
+            <a href="/admin/articles" className={cn(buttonVariants({ variant: "outline" }))}>
+              Cancel
+            </a>
+            {article && (
+              <div className="ml-auto">
+                <AlertDialog>
+                  <AlertDialogTrigger render={<Button type="button" variant="destructive" />}>
+                    Delete
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this article?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
