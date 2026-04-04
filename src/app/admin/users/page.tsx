@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -17,38 +19,50 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6">用户管理</h1>
-
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="text-left px-4 py-2 font-medium">昵称</th>
-              <th className="text-left px-4 py-2 font-medium">邮箱</th>
-              <th className="text-left px-4 py-2 font-medium">角色</th>
-              <th className="text-left px-4 py-2 font-medium">收藏</th>
-              <th className="text-left px-4 py-2 font-medium">评论</th>
-              <th className="text-left px-4 py-2 font-medium">注册时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-t border-gray-200 dark:border-gray-800">
-                <td className="px-4 py-2">{user.nickname}</td>
-                <td className="px-4 py-2 text-gray-500">{user.email}</td>
-                <td className="px-4 py-2">
-                  <span className={`text-xs px-2 py-0.5 rounded ${user.role === "ADMIN" ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300" : "bg-gray-100 dark:bg-gray-800"}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-2">{user._count.favorites}</td>
-                <td className="px-4 py-2">{user._count.comments}</td>
-                <td className="px-4 py-2 text-gray-500">{new Date(user.createdAt).toLocaleDateString("zh-CN")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold">Users</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{users.length} registered users</p>
       </div>
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Email</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Role</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden md:table-cell">Favorites</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden md:table-cell">Comments</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-border last:border-0 transition-colors hover:bg-muted/50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                          {user.nickname.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.nickname}</p>
+                          <p className="text-xs text-muted-foreground sm:hidden">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{user.email}</td>
+                    <td className="px-4 py-3"><Badge variant={user.role === "ADMIN" ? "default" : "outline"}>{user.role}</Badge></td>
+                    <td className="px-4 py-3 text-center text-muted-foreground hidden md:table-cell">{user._count.favorites}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground hidden md:table-cell">{user._count.comments}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{new Date(user.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
