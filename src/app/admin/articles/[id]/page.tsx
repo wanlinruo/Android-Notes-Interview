@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ArticleForm } from "@/components/admin/article-form";
+import { VersionHistory } from "@/components/admin/version-history";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function AdminArticleEditPage({ params }: Props) {
   if (id === "new") {
     return (
       <div>
-        <h1 className="text-xl font-bold mb-6">新建文章</h1>
+        <h1 className="mb-6 text-xl font-bold">New Article</h1>
         <ArticleForm categories={categories} tags={tags} />
       </div>
     );
@@ -34,8 +35,15 @@ export default async function AdminArticleEditPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6">编辑文章</h1>
-      <ArticleForm article={article} categories={categories} tags={tags} />
+      <h1 className="mb-6 text-xl font-bold">Edit Article</h1>
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0">
+          <ArticleForm article={article} categories={categories} tags={tags} />
+        </div>
+        <div className="hidden lg:block w-72 flex-shrink-0 sticky top-6">
+          <VersionHistory articleId={id} />
+        </div>
+      </div>
     </div>
   );
 }
