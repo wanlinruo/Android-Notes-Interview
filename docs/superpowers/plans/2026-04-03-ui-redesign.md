@@ -2273,7 +2273,7 @@ git commit -m "feat: redesign admin layout and sidebar with brand theme"
 - Modify: `src/app/admin/page.tsx`
 - Modify: `src/components/admin/stats-card.tsx`
 
-- [ ] **Step 1: Rewrite stats-card.tsx**
+- [x] **Step 1: Rewrite stats-card.tsx**
 
 Replace `src/components/admin/stats-card.tsx`:
 
@@ -2303,7 +2303,7 @@ export function StatsCard({ label, value, icon }: StatsCardProps) {
 }
 ```
 
-- [ ] **Step 2: Rewrite admin/page.tsx**
+- [x] **Step 2: Rewrite admin/page.tsx**
 
 Replace `src/app/admin/page.tsx`:
 
@@ -2367,11 +2367,11 @@ export default async function AdminDashboard() {
 }
 ```
 
-- [ ] **Step 3: Verify in browser**
+- [x] **Step 3: Verify in browser**
 
 Open `http://localhost:3000/admin` — verify stats cards and top articles.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/app/admin/page.tsx src/components/admin/stats-card.tsx
@@ -3436,9 +3436,70 @@ git commit -m "feat: redesign admin import page with shadcn/ui"
 
 ---
 
-## Phase 5: Final Verification
+## Phase 5: Enhancement (插入需求)
 
-### Task 16: Build, Lint, Test, and Browser Verification
+### Task 17: Add Article Cover Image Support
+
+**Background:** 分类页瀑布流卡片目前使用分类图标渐变占位，需要支持真实文章封面图。
+
+**Files:**
+- Modify: `prisma/schema.prisma`
+- Modify: `src/components/masonry-article-card.tsx`
+- Modify: `src/components/article-card.tsx`
+- Modify: `src/components/admin/article-form.tsx`
+- Modify: `src/app/admin/articles/[id]/page.tsx`
+
+- [ ] **Step 1: Add coverImage field to Article model**
+
+在 `prisma/schema.prisma` 的 Article model 中添加：
+
+```prisma
+coverImage  String?
+```
+
+- [ ] **Step 2: Generate and run migration**
+
+```bash
+npx prisma migrate dev --name add-article-cover-image
+npx prisma generate
+```
+
+- [ ] **Step 3: Update MasonryArticleCard to display real cover image**
+
+修改 `src/components/masonry-article-card.tsx`：当 `article.coverImage` 存在时用 `<img>` 显示封面，否则保留分类图标渐变占位。
+
+- [ ] **Step 4: Update ArticleCard to optionally display cover image**
+
+修改 `src/components/article-card.tsx`：可选显示封面缩略图。
+
+- [ ] **Step 5: Update Admin article form to support cover image URL input**
+
+修改 `src/components/admin/article-form.tsx`：增加封面图 URL 输入框。
+
+- [ ] **Step 6: Verify TypeScript compiles**
+
+```bash
+npx tsc --noEmit
+```
+
+- [ ] **Step 7: Verify in browser**
+
+- 分类页瀑布流卡片显示封面图
+- Admin 文章编辑页可输入封面图 URL
+- 无封面图时仍然显示分类图标占位
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add prisma/ src/components/masonry-article-card.tsx src/components/article-card.tsx src/components/admin/article-form.tsx
+git commit -m "feat: add article cover image support for masonry cards"
+```
+
+---
+
+## Phase 6: Final Verification
+
+### Task 18: Build, Lint, Test, and Browser Verification
 
 - [ ] **Step 1: Run TypeScript check**
 
