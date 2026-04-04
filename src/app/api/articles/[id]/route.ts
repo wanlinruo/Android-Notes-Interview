@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-utils";
+import { createArticleVersion } from "@/lib/article-versions";
 
 export async function GET(
   request: NextRequest,
@@ -36,6 +37,9 @@ export async function PUT(
 ) {
   await requireAdmin();
   const { id } = await params;
+
+  // Snapshot current state before updating
+  await createArticleVersion(id);
 
   const { title, content, summary, type, status, categoryId, tagIds } =
     await request.json();
