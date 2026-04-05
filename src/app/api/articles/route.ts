@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   await requireAdmin();
 
-  const { title, content, summary, type, status, categoryId, tagIds } =
+  const { title, content, summary, type, status, categoryId, tagIds, coverImage } =
     await request.json();
 
   if (!title || !content || !type || !categoryId) {
@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       type,
       status: status || "DRAFT",
       categoryId,
+      coverImage: coverImage || null,
       tags: tagIds
         ? {
             create: tagIds.map((tagId: string) => ({ tagId })),

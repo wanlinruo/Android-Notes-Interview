@@ -7,6 +7,7 @@ interface ArticleCardProps {
     slug: string;
     title: string;
     summary?: string | null;
+    coverImage?: string | null;
     type: string;
     viewCount: number;
     _count?: { favorites: number };
@@ -22,6 +23,16 @@ export function ArticleCard({ article }: ArticleCardProps) {
     <Link href={`/articles/${article.slug}`}>
       <Card className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50">
         <CardContent className="flex items-start justify-between gap-4 p-4">
+          {article.coverImage && (
+            <div className="hidden sm:block h-20 w-28 shrink-0 overflow-hidden rounded-md">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={article.coverImage}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h3 className="font-medium leading-snug group-hover:text-primary transition-colors">
               {article.title}

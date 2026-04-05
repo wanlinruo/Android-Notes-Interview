@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Category, Tag, Article } from "@/generated/prisma/client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,9 +41,31 @@ export function ArticleForm({ article, categories, tags }: Props) {
   const [type, setType] = useState(article?.type || "NOTE");
   const [status, setStatus] = useState(article?.status || "DRAFT");
   const [categoryId, setCategoryId] = useState(article?.categoryId || "");
+  const [coverImage, setCoverImage] = useState(article?.coverImage || "");
+  const [coverLoading, setCoverLoading] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     article?.tags.map((t) => t.tagId) || []
   );
+
+  const fetchRandomCover = useCallback(async () => {
+    setCoverLoading(true);
+    try {
+      const res = await fetch("/api/unsplash");
+      if (res.ok) {
+        const data = await res.json();
+        setCoverImage(data.url);
+      }
+    } finally {
+      setCoverLoading(false);
+    }
+  }, []);
+
+  // Auto-fetch cover image for new articles
+  useEffect(() => {
+    if (!article && !coverImage) {
+      void fetchRandomCover();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleTag(tagId: string) {
     setSelectedTagIds((prev) =>
@@ -55,7 +77,7 @@ export function ArticleForm({ article, categories, tags }: Props) {
     e.preventDefault();
     setSaving(true);
 
-    const body = { title, content, summary, type, status, categoryId, tagIds: selectedTagIds };
+    const body = { title, content, summary, type, status, categoryId, tagIds: selectedTagIds, coverImage: coverImage || null };
     const url = article ? `/api/articles/${article.id}` : "/api/articles";
     const method = article ? "PUT" : "POST";
 
@@ -96,6 +118,41 @@ export function ArticleForm({ article, categories, tags }: Props) {
           <div className="space-y-2">
             <label className="text-sm font-medium">Summary</label>
             <Input value={summary} onChange={(e) => setSummary(e.target.value)} />
+          </div>
+
+          {/* Cover Image */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Cover Image URL</label>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={coverLoading}
+                onClick={fetchRandomCover}
+                className="shrink-0"
+              >
+                {coverLoading ? "Loading..." : "Shuffle"}
+              </Button>
+            </div>
+            {coverImage && (
+              <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={coverImage}
+                  alt="Cover preview"
+                  className="h-40 w-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Type / Status / Category */}

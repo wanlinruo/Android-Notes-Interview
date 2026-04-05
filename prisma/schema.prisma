@@ -79,6 +79,7 @@ model Article {
   type       ArticleType
   status     ArticleStatus @default(DRAFT)
   sourceUrl  String?
+  coverImage String?
   viewCount  Int           @default(0)
   categoryId String
   category   Category      @relation(fields: [categoryId], references: [id])

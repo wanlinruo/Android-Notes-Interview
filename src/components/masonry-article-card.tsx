@@ -7,6 +7,7 @@ interface MasonryArticleCardProps {
     slug: string;
     title: string;
     summary?: string | null;
+    coverImage?: string | null;
     type: string;
     viewCount: number;
     _count?: { favorites: number; comments?: number };
@@ -22,12 +23,23 @@ export function MasonryArticleCard({ article }: MasonryArticleCardProps) {
   return (
     <Link href={`/articles/${article.slug}`} className="block break-inside-avoid mb-4">
       <Card className="group overflow-hidden transition-all duration-250 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
-        {/* Cover placeholder with category icon */}
-        <div className="flex items-center justify-center bg-gradient-to-br from-primary/8 via-primary/4 to-transparent aspect-[16/10]">
-          <span className="text-4xl opacity-60 group-hover:scale-110 transition-transform duration-300">
-            {article.category.icon || "📄"}
-          </span>
-        </div>
+        {/* Cover image or placeholder */}
+        {article.coverImage ? (
+          <div className="aspect-[16/10] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={article.coverImage}
+              alt={article.title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center bg-gradient-to-br from-primary/8 via-primary/4 to-transparent aspect-[16/10]">
+            <span className="text-4xl opacity-60 group-hover:scale-110 transition-transform duration-300">
+              {article.category.icon || "📄"}
+            </span>
+          </div>
+        )}
 
         <CardContent className="p-4">
           {/* Category label */}

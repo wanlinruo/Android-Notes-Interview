@@ -22,6 +22,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/android_hub
       NEXTAUTH_SECRET: dev-secret-key-change-in-production
       NEXTAUTH_URL: http://localhost:3000
+      UNSPLASH_ACCESS_KEY: bgODZzvwfW2c2cdnAJKM2LGrx7pOQrnbEaEuc7sZfZ4
     volumes:
       - .:/app
       - /app/node_modules

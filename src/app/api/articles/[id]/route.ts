@@ -41,7 +41,7 @@ export async function PUT(
   // Snapshot current state before updating
   await createArticleVersion(id);
 
-  const { title, content, summary, type, status, categoryId, tagIds } =
+  const { title, content, summary, type, status, categoryId, tagIds, coverImage } =
     await request.json();
 
   // Regenerate slug if title changed
@@ -69,6 +69,7 @@ export async function PUT(
       type,
       status,
       categoryId,
+      coverImage: coverImage !== undefined ? (coverImage || null) : undefined,
       tags: tagIds
         ? {
             create: tagIds.map((tagId: string) => ({ tagId })),
