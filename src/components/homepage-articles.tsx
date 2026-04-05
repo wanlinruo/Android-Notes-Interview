@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MasonryArticleCard } from "@/components/masonry-article-card";
 
 interface Article {
@@ -46,11 +46,68 @@ export function HomepageArticles({ hotArticles, latestArticles }: Props) {
     initialVariants([...hotArticles, ...latestArticles])
   );
   const articles = tab === "hot" ? hotArticles : latestArticles;
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Randomize on client mount (after hydration)
   useEffect(() => {
     setVariantMap(randomizeVariants([...hotArticles, ...latestArticles]));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // JS masonry: measure card heights, position into columns row-first
+  const layoutMasonry = useCallback(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const items = Array.from(grid.children) as HTMLElement[];
+    if (items.length === 0) return;
+
+    const gridWidth = grid.clientWidth;
+    const gap = 16;
+    const cols = gridWidth >= 768 ? 3 : 2;
+    const colWidth = (gridWidth - gap * (cols - 1)) / cols;
+
+    // Track the height of each column
+    const colHeights = new Array(cols).fill(0);
+
+    for (const item of items) {
+      // Find the shortest column (row-first: left to right, pick leftmost among equal)
+      let minCol = 0;
+      for (let c = 1; c < cols; c++) {
+        if (colHeights[c] < colHeights[minCol]) minCol = c;
+      }
+
+      item.style.position = "absolute";
+      item.style.width = `${colWidth}px`;
+      item.style.left = `${minCol * (colWidth + gap)}px`;
+      item.style.top = `${colHeights[minCol]}px`;
+
+      colHeights[minCol] += item.offsetHeight + gap;
+    }
+
+    // Set grid height to tallest column
+    grid.style.height = `${Math.max(...colHeights)}px`;
+  }, []);
+
+  useEffect(() => {
+    // Layout after render + images load
+    layoutMasonry();
+
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    // Re-layout when images load
+    const images = grid.querySelectorAll("img");
+    const onLoad = () => layoutMasonry();
+    images.forEach((img) => img.addEventListener("load", onLoad));
+
+    // Re-layout on resize
+    window.addEventListener("resize", layoutMasonry);
+
+    return () => {
+      images.forEach((img) => img.removeEventListener("load", onLoad));
+      window.removeEventListener("resize", layoutMasonry);
+    };
+  }, [tab, variantMap, layoutMasonry]);
 
   function handleTabChange(newTab: "hot" | "latest") {
     setTab(newTab);
@@ -89,8 +146,8 @@ export function HomepageArticles({ hotArticles, latestArticles }: Props) {
         </button>
       </div>
 
-      {/* Masonry grid — randomized variants for visual variety on each render */}
-      <div className="columns-2 gap-4 md:columns-3">
+      {/* Masonry grid — JS positioned, row-first order preserved */}
+      <div ref={gridRef} className="relative">
         {articles.map((article) => (
           <MasonryArticleCard key={article.slug} article={article} variant={variantMap[article.slug]} />
         ))}

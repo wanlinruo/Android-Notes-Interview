@@ -25,7 +25,7 @@ export function MasonryArticleCard({ article, variant = "default" }: MasonryArti
   const coverAspect = variant === "featured" ? "aspect-[16/12]" : variant === "compact" ? "aspect-[3/1]" : "aspect-[16/10]";
 
   return (
-    <Link href={`/articles/${article.slug}`} className="block break-inside-avoid mb-4">
+    <Link href={`/articles/${article.slug}`} className="block break-inside-avoid">
       <Card className="group overflow-hidden transition-all duration-250 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
         {/* Cover image or placeholder */}
         {article.coverImage ? (
