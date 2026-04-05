@@ -2,6 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Category, Tag } from "@/generated/prisma/client";
 
 interface Props {
@@ -45,7 +56,7 @@ export function ImportForm({ categories, tags }: Props) {
     setLoading(false);
 
     if (!res.ok) {
-      setError("采集失败，请检查 URL 是否正确");
+      setError("Import failed. Please check that the URL is correct and accessible.");
       return;
     }
 
@@ -59,11 +70,12 @@ export function ImportForm({ categories, tags }: Props) {
 
   async function handleSave() {
     if (!categoryId) {
-      setError("请选择分类");
+      setError("Please select a category.");
       return;
     }
 
     setLoading(true);
+    setError("");
     const res = await fetch("/api/import", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -84,7 +96,7 @@ export function ImportForm({ categories, tags }: Props) {
       router.push("/admin/articles?status=DRAFT");
       router.refresh();
     } else {
-      setError("保存失败");
+      setError("Save failed. Please try again.");
     }
   }
 
@@ -95,128 +107,118 @@ export function ImportForm({ categories, tags }: Props) {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* URL Input */}
-      <form onSubmit={handlePreview} className="flex gap-3 mb-6">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="输入文章 URL..."
-          required
-          className="flex-1 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "采集中..." : "采集预览"}
-        </button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Extract from URL</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePreview} className="flex gap-3">
+            <Input
+              type="url"
+              placeholder="https://example.com/article"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+              className="flex-1"
+            />
+            <Button type="submit" disabled={loading}>
+              {loading && !preview ? "Extracting..." : "Preview"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
+      {/* Error */}
       {error && (
-        <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      {/* Preview */}
+      {/* Preview & Edit */}
       {preview && (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">标题</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">类型</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-              >
-                <option value="NOTE">知识笔记</option>
-                <option value="INTERVIEW">面试题</option>
-              </select>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Preview & Edit</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                分类
-                {preview.suggestedCategory && (
-                  <span className="text-xs text-green-600 ml-2">
-                    (推荐: {preview.suggestedCategory.name})
-                  </span>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Type</label>
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NOTE">Note</SelectItem>
+                    <SelectItem value="INTERVIEW">Interview</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Category
+                  {preview.suggestedCategory && (
+                    <Badge variant="secondary" className="ml-2 text-[10px] font-normal">
+                      Suggested: {preview.suggestedCategory.name}
+                    </Badge>
+                  )}
+                </label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Tags
+                {preview.suggestedTags.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-[10px] font-normal">
+                    Auto-selected
+                  </Badge>
                 )}
               </label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-              >
-                <option value="">选择分类</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleTag(tag.id)}
+                  >
+                    {tag.name}
+                  </Button>
                 ))}
-              </select>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              标签
-              {preview.suggestedTags.length > 0 && (
-                <span className="text-xs text-green-600 ml-2">
-                  (已自动选中推荐标签)
-                </span>
-              )}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => toggleTag(tag.id)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    selectedTagIds.includes(tag.id)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-                  {tag.name}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Content (Markdown)</label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={15}
+                className="w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm font-mono leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+              />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              内容预览（Markdown）
-            </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={15}
-              className="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md resize-y"
-            />
-          </div>
-
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-6 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "保存中..." : "保存为草稿"}
-          </button>
-        </div>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save as Draft"}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

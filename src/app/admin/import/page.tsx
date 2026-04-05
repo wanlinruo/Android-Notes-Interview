@@ -11,10 +11,12 @@ export default async function AdminImportPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-2">内容采集</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        输入外部文章 URL，自动提取内容并转为 Markdown 草稿
-      </p>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold">Content Import</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter an external article URL to extract content and create a Markdown draft
+        </p>
+      </div>
       <ImportForm categories={categories} tags={tags} />
     </div>
   );
