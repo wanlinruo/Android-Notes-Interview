@@ -2,6 +2,9 @@ FROM m.daocloud.io/docker.io/library/node:20-alpine
 
 WORKDIR /app
 
+# Install CA certificates for HTTPS requests
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+
 # Use China npm mirror
 RUN npm config set registry https://registry.npmmirror.com
 

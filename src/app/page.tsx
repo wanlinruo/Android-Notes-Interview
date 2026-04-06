@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { HomepageArticles } from "@/components/homepage-articles";
 
 export const dynamic = "force-dynamic";
 
@@ -16,20 +16,21 @@ export default async function HomePage() {
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: 6,
       include: {
-        category: true,
-        tags: { include: { tag: true } },
-        _count: { select: { favorites: true } },
+        category: { select: { name: true, icon: true } },
+        tags: { include: { tag: { select: { name: true, type: true } } } },
+        _count: { select: { favorites: true, comments: true } },
       },
     }),
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { favorites: { _count: "desc" } },
-      take: 5,
+      take: 6,
       include: {
-        category: true,
-        _count: { select: { favorites: true } },
+        category: { select: { name: true, icon: true } },
+        tags: { include: { tag: { select: { name: true, type: true } } } },
+        _count: { select: { favorites: true, comments: true } },
       },
     }),
     prisma.article.count({ where: { status: "PUBLISHED" } }),
@@ -95,55 +96,7 @@ export default async function HomePage() {
       </section>
 
       {/* Hot & Latest Articles */}
-      <section className="grid gap-8 pb-16 md:grid-cols-2">
-        {/* Hot */}
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">🔥 Hot Articles</h2>
-          <div className="space-y-2">
-            {hotArticles.map((article) => (
-              <Link key={article.id} href={`/articles/${article.slug}`}>
-                <Card className="group transition-all duration-200 hover:border-primary/50">
-                  <CardContent className="flex items-center justify-between p-3">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate group-hover:text-primary transition-colors">{article.title}</div>
-                      <div className="text-xs text-muted-foreground">{article.category.name}</div>
-                    </div>
-                    <span className="ml-2 flex-shrink-0 text-xs text-muted-foreground">⭐ {article._count.favorites}</span>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Latest */}
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">📄 Latest Articles</h2>
-          <div className="space-y-2">
-            {latestArticles.map((article) => {
-              const difficulty = article.tags.find((t) => t.tag.type === "DIFFICULTY");
-              return (
-                <Link key={article.id} href={`/articles/${article.slug}`}>
-                  <Card className="group transition-all duration-200 hover:border-primary/50">
-                    <CardContent className="flex items-center justify-between p-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium truncate group-hover:text-primary transition-colors">{article.title}</div>
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{article.category.name}</span>
-                          {difficulty && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{difficulty.tag.name}</Badge>}
-                        </div>
-                      </div>
-                      <Badge variant={article.type === "NOTE" ? "default" : "secondary"} className="ml-2 flex-shrink-0 text-xs">
-                        {article.type}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <HomepageArticles hotArticles={hotArticles} latestArticles={latestArticles} />
     </div>
   );
 }

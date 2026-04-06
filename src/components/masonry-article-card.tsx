@@ -14,18 +14,22 @@ interface MasonryArticleCardProps {
     category: { name: string; icon?: string | null };
     tags: { tag: { name: string; type: string } }[];
   };
+  variant?: "default" | "compact" | "featured";
 }
 
-export function MasonryArticleCard({ article }: MasonryArticleCardProps) {
+export function MasonryArticleCard({ article, variant = "default" }: MasonryArticleCardProps) {
   const difficultyTag = article.tags.find((t) => t.tag.type === "DIFFICULTY");
   const topicTags = article.tags.filter((t) => t.tag.type === "TOPIC").slice(0, 3);
+  const showSummary = variant !== "compact";
+  const showTags = variant !== "compact";
+  const coverAspect = variant === "featured" ? "aspect-[16/12]" : variant === "compact" ? "aspect-[3/1]" : "aspect-[16/10]";
 
   return (
-    <Link href={`/articles/${article.slug}`} className="block break-inside-avoid mb-4">
+    <Link href={`/articles/${article.slug}`} className="block break-inside-avoid">
       <Card className="group overflow-hidden transition-all duration-250 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
         {/* Cover image or placeholder */}
         {article.coverImage ? (
-          <div className="aspect-[16/10] overflow-hidden">
+          <div className={`overflow-hidden ${coverAspect}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={article.coverImage}
@@ -34,53 +38,57 @@ export function MasonryArticleCard({ article }: MasonryArticleCardProps) {
             />
           </div>
         ) : (
-          <div className="flex items-center justify-center bg-gradient-to-br from-primary/8 via-primary/4 to-transparent aspect-[16/10]">
-            <span className="text-4xl opacity-60 group-hover:scale-110 transition-transform duration-300">
+          <div className={`flex items-center justify-center bg-gradient-to-br from-primary/8 via-primary/4 to-transparent ${coverAspect}`}>
+            <span className={`opacity-60 group-hover:scale-110 transition-transform duration-300 ${variant === "compact" ? "text-2xl" : "text-4xl"}`}>
               {article.category.icon || "📄"}
             </span>
           </div>
         )}
 
-        <CardContent className="p-4">
+        <CardContent className={variant === "compact" ? "p-3" : "p-4"}>
           {/* Category label */}
           <div className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1.5">
             {article.category.name}
           </div>
 
           {/* Title */}
-          <h3 className="text-[15px] font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">
+          <h3 className={`font-semibold leading-snug group-hover:text-primary transition-colors mb-2 ${variant === "compact" ? "text-sm line-clamp-2" : "text-[15px] line-clamp-2"}`}>
             {article.title}
           </h3>
 
           {/* Summary */}
-          {article.summary && (
+          {showSummary && article.summary && (
             <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-3 mb-3">
               {article.summary}
             </p>
           )}
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {topicTags.map((t) => (
-              <Badge key={t.tag.name} variant="secondary" className="text-[11px] px-2 py-0 font-normal">
-                {t.tag.name}
-              </Badge>
-            ))}
-            {difficultyTag && (
-              <Badge variant="outline" className="text-[11px] px-2 py-0 font-normal border-amber-500/40 text-amber-600 dark:text-amber-400">
-                {difficultyTag.tag.name}
-              </Badge>
-            )}
-          </div>
+          {showTags && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {topicTags.map((t) => (
+                <Badge key={t.tag.name} variant="secondary" className="text-[11px] px-2 py-0 font-normal">
+                  {t.tag.name}
+                </Badge>
+              ))}
+              {difficultyTag && (
+                <Badge variant="outline" className="text-[11px] px-2 py-0 font-normal border-amber-500/40 text-amber-600 dark:text-amber-400">
+                  {difficultyTag.tag.name}
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Meta */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t border-border">
-            <span>👁 {article.viewCount}</span>
-            <span>⭐ {article._count?.favorites || 0}</span>
-            {article._count?.comments !== undefined && (
-              <span>💬 {article._count.comments}</span>
-            )}
-          </div>
+          {variant !== "compact" && (
+            <div className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t border-border">
+              <span>👁 {article.viewCount}</span>
+              <span>⭐ {article._count?.favorites || 0}</span>
+              {article._count?.comments !== undefined && (
+                <span>💬 {article._count.comments}</span>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>
