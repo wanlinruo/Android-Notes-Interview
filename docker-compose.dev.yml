@@ -22,7 +22,13 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/android_hub
       NEXTAUTH_SECRET: dev-secret-key-change-in-production
       NEXTAUTH_URL: http://localhost:3000
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       UNSPLASH_ACCESS_KEY: bgODZzvwfW2c2cdnAJKM2LGrx7pOQrnbEaEuc7sZfZ4
+      QUICK_IMPORT_API_KEY: your-quick-import-api-key-change-me
+      LARK_APP_ID: cli_a9598cc559b85bb4
+      LARK_APP_SECRET: oMf3yTY4sGEpm7Y11VJYXgh7Kp6E7185
+      LARK_VERIFICATION_TOKEN: n6oIatfcxYJsyGzHefQyafWRt52BFDFa
+      LARK_ALLOWED_USER_IDS: ""
     volumes:
       - .:/app
       - /app/node_modules
