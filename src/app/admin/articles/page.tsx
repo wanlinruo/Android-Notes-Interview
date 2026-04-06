@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/pagination";
 import { ArticleFilters } from "@/components/admin/article-filters-bar";
+import { ArticlesTable } from "@/components/admin/articles-table";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +33,20 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
     prisma.article.count({ where }),
   ]);
 
+  // Serialize and format dates on server to avoid hydration mismatch
+  const serializedArticles = articles.map((a) => {
+    const d = a.updatedAt;
+    const formatted = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    return {
+      id: a.id,
+      title: a.title,
+      type: a.type,
+      status: a.status,
+      updatedAtFormatted: formatted,
+      category: { name: a.category.name },
+    };
+  });
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -50,54 +64,9 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
 
       <ArticleFilters currentStatus={status} currentType={type} />
 
-      {/* Table */}
       <Card>
         <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Title</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Type</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Category</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {articles.map((article) => (
-                <tr key={article.id} className="border-b border-border last:border-0 transition-colors hover:bg-accent/50">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/articles/${article.id}`} className="font-medium hover:text-primary transition-colors">
-                      {article.title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <Badge variant="outline" className="text-[11px]">
-                      {article.type === "NOTE" ? "Note" : "Interview"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
-                    {article.category.name}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={article.status === "PUBLISHED" ? "default" : "secondary"}>
-                      {article.status === "PUBLISHED" ? "Published" : "Draft"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
-                    {new Date(article.updatedAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-              {articles.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                    No articles found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <ArticlesTable articles={serializedArticles} />
         </CardContent>
       </Card>
 

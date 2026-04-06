@@ -22,6 +22,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/android_hub
       NEXTAUTH_SECRET: dev-secret-key-change-in-production
       NEXTAUTH_URL: http://localhost:3000
+      TZ: Asia/Shanghai
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       UNSPLASH_ACCESS_KEY: bgODZzvwfW2c2cdnAJKM2LGrx7pOQrnbEaEuc7sZfZ4
       QUICK_IMPORT_API_KEY: your-quick-import-api-key-change-me
